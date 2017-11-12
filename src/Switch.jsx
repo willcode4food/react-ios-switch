@@ -41,6 +41,8 @@ export default class Switch extends React.Component {
     this.handleHandleClick = this.handleHandleClick.bind(this);
     this.handleMouseDown = this.handleMouseDown.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
+    this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchEnd = this.handleTouchEnd.bind(this);
     this.setRef = this.setRef.bind(this);
   }
 
@@ -154,6 +156,26 @@ export default class Switch extends React.Component {
     e.stopPropagation();
   }
 
+  handleTouchStart(e) {
+    if (this.isDisabled()) {
+      return;
+    }
+  
+    this.pointerTracker = pointer(e).start();
+    
+    this.offsetTracker = trackOffset(this.pointerTracker.x, {
+      from: this.getOffset(),
+      onUpdate: transform.pipe(
+        transform.clamp(0, this.getOffsetWidth()),
+        offset => this.setState({ offset })
+      ),
+    }).start();
+    
+    this.setState({
+      isDragging: true,
+      offset: this.getOffset(),
+    });
+  }
   handleMouseDown(e) {
     if (this.isDisabled()) {
       return;
@@ -174,7 +196,28 @@ export default class Switch extends React.Component {
       offset: this.getOffset(),
     });
   }
+  handleTouchEnd(e) {
+    if (!this.state.isDragging) {
+      return;
+    }
   
+    this.pointerTracker.stop();
+    this.offsetTracker.stop();
+    
+    const prevOffset = this.props.checked ? this.getOffsetWidth() : 0;
+    const checked = this.state.offset === prevOffset ?
+      // handle case when the handle is clicked
+      !this.props.checked :
+      // handle case when the handle is dragged
+      this.getOffsetProgress() >= 0.5;
+
+    this.setState({ 
+      isDragging: false,
+      offset: null,
+    });
+
+    this.clickChange(checked);
+  }
   handleMouseUp() {
     if (!this.state.isDragging) {
       return;
@@ -253,6 +296,8 @@ export default class Switch extends React.Component {
         <span 
           onClick={this.handleHandleClick}
           onMouseDown={this.handleMouseDown}
+          onTouchStart={this.handleTouchStart}
+          onTouchEnd={this.handleTouchEnd}
           style={prefixStyle({
             backgroundColor: this.getHandleColor(),
             borderRadius: '100%',

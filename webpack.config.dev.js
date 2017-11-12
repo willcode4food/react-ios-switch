@@ -4,7 +4,8 @@ const webpack = require('webpack');
 const common = require('./webpack.config.common');
 
 module.exports = {
-  ...common,
+  module: common.module,
+  resolve: common.resolve,
   entry: [
     'babel-polyfill',
     path.resolve(__dirname, 'src/entrypoint'),
