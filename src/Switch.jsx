@@ -19,6 +19,7 @@ export default class Switch extends React.Component {
     pendingOnColor: PropTypes.string,
     readOnly: PropTypes.bool,
     style: PropTypes.object,
+    innerStyle: PropTypes.object
   };
 
   static defaultProps = {
@@ -254,6 +255,7 @@ export default class Switch extends React.Component {
       onChange,
       readOnly,
       style,
+      innerStyle,
     } = this.props;
             
     const { isDragging } = this.state;
@@ -298,7 +300,8 @@ export default class Switch extends React.Component {
           onMouseDown={this.handleMouseDown}
           onTouchStart={this.handleTouchStart}
           onTouchEnd={this.handleTouchEnd}
-          style={prefixStyle({
+          style={{
+            ...prefixStyle({
             backgroundColor: this.getHandleColor(),
             borderRadius: '100%',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
@@ -310,7 +313,9 @@ export default class Switch extends React.Component {
             top: 0,
             transition: isDragging ? null : '0.2s',
             width: this.getHandleLength(),
-          })}
+          }),
+            ...innerStyle,
+          }}
         />
         <input
           checked={checked}
