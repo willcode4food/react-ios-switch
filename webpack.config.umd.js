@@ -5,7 +5,8 @@ const common = require('./webpack.config.common');
 
 // no externals for backwards compatibility
 module.exports = {
-  ...common,
+    module: common.module,
+  resolve: common.resolve,
   entry: path.resolve(__dirname, 'src'),
   output: {
     path: path.resolve(__dirname, 'build'),
