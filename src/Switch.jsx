@@ -1,4 +1,4 @@
-import { easing, pointer, trackOffset, transform } from 'popmotion';
+import { easing, pointer, trackOffset, transform, touches } from 'popmotion';
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -154,16 +154,20 @@ export default class Switch extends React.Component {
   }
   
   handleHandleClick(e) {
+    // stopPropagation prevents touch from functioning properly
+    if('ontouchstart' in document.documentElement) {
+      return;
+    }
     e.stopPropagation();
   }
 
   handleTouchStart(e) {
+
     if (this.isDisabled()) {
       return;
     }
-  
-    this.pointerTracker = pointer(e).start();
-    
+
+    this.pointerTracker = pointer(e).start();    
     this.offsetTracker = trackOffset(this.pointerTracker.x, {
       from: this.getOffset(),
       onUpdate: transform.pipe(
@@ -178,12 +182,12 @@ export default class Switch extends React.Component {
     });
   }
   handleMouseDown(e) {
+
     if (this.isDisabled()) {
       return;
     }
   
-    this.pointerTracker = pointer(e).start();
-    
+    this.pointerTracker = pointer(e).start();    
     this.offsetTracker = trackOffset(this.pointerTracker.x, {
       from: this.getOffset(),
       onUpdate: transform.pipe(
@@ -197,14 +201,14 @@ export default class Switch extends React.Component {
       offset: this.getOffset(),
     });
   }
-  handleTouchEnd(e) {
+  handleTouchEnd(e) {  
+    
     if (!this.state.isDragging) {
       return;
     }
   
     this.pointerTracker.stop();
     this.offsetTracker.stop();
-    
     const prevOffset = this.props.checked ? this.getOffsetWidth() : 0;
     const checked = this.state.offset === prevOffset ?
       // handle case when the handle is clicked
@@ -215,11 +219,11 @@ export default class Switch extends React.Component {
     this.setState({ 
       isDragging: false,
       offset: null,
-    });
-
+    });    
     this.clickChange(checked);
+    
   }
-  handleMouseUp() {
+  handleMouseUp() {     
     if (!this.state.isDragging) {
       return;
     }
@@ -299,10 +303,11 @@ export default class Switch extends React.Component {
           onClick={this.handleHandleClick}
           onMouseDown={this.handleMouseDown}
           onTouchStart={this.handleTouchStart}
-          onTouchEnd={this.handleTouchEnd}
+          onTouchEnd={this.handleTouchEnd.bind({self:this, handleHandleClick: this.handleHandleClick})}
           style={{
             ...prefixStyle({
             backgroundColor: this.getHandleColor(),
+            border: `1px solid ${borderColor}`,
             borderRadius: '100%',
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.4)',
             cursor: this.getHandleCursor(),
